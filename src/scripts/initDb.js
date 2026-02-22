@@ -1,11 +1,8 @@
-﻿const fs = require('fs');
-const path = require('path');
 const { pool } = require('../db/pool');
+const { ensureSchema } = require('../db/ensureSchema');
 
 async function main() {
-  const sqlPath = path.join(__dirname, '..', 'db', 'init.sql');
-  const sql = fs.readFileSync(sqlPath, 'utf8');
-  await pool.query(sql);
+  await ensureSchema();
   console.log('Database initialized');
   await pool.end();
 }
