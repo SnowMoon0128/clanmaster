@@ -1,6 +1,9 @@
-﻿const tokenInput = document.getElementById("token");
+const tokenInput = document.getElementById("token");
 const output = document.getElementById("output");
-const siteAdminSection = document.getElementById("siteAdminSection");
+const siteAdminSection = document.getElementById("section-site-admin");
+const siteAdminMenu = document.getElementById("siteAdminMenu");
+const ownerInviteMenu = document.getElementById("ownerInviteMenu");
+const dashMenu = document.getElementById("dashMenu");
 
 const token = localStorage.getItem("cm_token") || "";
 const role = localStorage.getItem("cm_role") || "";
@@ -12,6 +15,10 @@ if (!token) {
 tokenInput.value = token;
 if (role === "site_admin") {
   siteAdminSection.classList.remove("hidden");
+  siteAdminMenu.classList.remove("hidden");
+}
+if (role === "owner") {
+  ownerInviteMenu.classList.remove("hidden");
 }
 
 document.getElementById("saveTokenBtn").addEventListener("click", () => {
@@ -23,6 +30,23 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   localStorage.removeItem("cm_token");
   localStorage.removeItem("cm_role");
   window.location.href = "/login";
+});
+
+dashMenu.addEventListener("click", (e) => {
+  const btn = e.target.closest(".menu-btn");
+  if (!btn) return;
+
+  for (const item of dashMenu.querySelectorAll(".menu-btn")) {
+    item.classList.remove("active");
+  }
+  btn.classList.add("active");
+
+  for (const panel of document.querySelectorAll(".section-panel")) {
+    panel.classList.add("hidden");
+  }
+
+  const targetPanel = document.getElementById(btn.dataset.target);
+  if (targetPanel) targetPanel.classList.remove("hidden");
 });
 
 function print(data) {
@@ -71,38 +95,52 @@ function bindForm(formId, handler) {
   });
 }
 
-bindForm("addPlayerForm", (v) => api("/api/players", {
-  method: "POST",
-  body: { clanId: Number(v.clanId), gameUid: v.gameUid, nickname: v.nickname }
-}));
+bindForm("addPlayerForm", (v) =>
+  api("/api/players", {
+    method: "POST",
+    body: { clanId: Number(v.clanId), gameUid: v.gameUid, nickname: v.nickname }
+  })
+);
 
-bindForm("movePlayerForm", (v) => api(`/api/players/${Number(v.playerId)}/move`, {
-  method: "POST",
-  body: { clanId: Number(v.clanId) }
-}));
+bindForm("movePlayerForm", (v) =>
+  api(`/api/players/${Number(v.playerId)}/move`, {
+    method: "POST",
+    body: { clanId: Number(v.clanId) }
+  })
+);
 
 bindForm("historyForm", (v) => api(`/api/players/${Number(v.playerId)}/history`));
 
-bindForm("blacklistForm", (v) => api("/api/blacklist", {
-  method: "POST",
-  body: { clanId: Number(v.clanId), playerId: Number(v.playerId), reason: v.reason || null }
-}));
+bindForm("blacklistForm", (v) =>
+  api("/api/blacklist", {
+    method: "POST",
+    body: { clanId: Number(v.clanId), playerId: Number(v.playerId), reason: v.reason || null }
+  })
+);
+
+bindForm("blacklistListForm", (v) => api(`/api/blacklist?clanId=${Number(v.clanId)}`));
 
 bindForm("listAdminsForm", (v) => api(`/api/clans/${Number(v.clanId)}/admins`));
 
-bindForm("addAdminForm", (v) => api(`/api/clans/${Number(v.clanId)}/admins`, {
-  method: "POST",
-  body: { email: v.email }
-}));
+bindForm("addAdminForm", (v) =>
+  api(`/api/clans/${Number(v.clanId)}/admins`, {
+    method: "POST",
+    body: { email: v.email }
+  })
+);
 
 bindForm("overviewForm", () => api("/api/admin/overview"));
 
-bindForm("blockUserForm", (v) => api("/api/admin/block-user", {
-  method: "POST",
-  body: { userId: Number(v.userId), reason: v.reason || null }
-}));
+bindForm("blockUserForm", (v) =>
+  api("/api/admin/block-user", {
+    method: "POST",
+    body: { userId: Number(v.userId), reason: v.reason || null }
+  })
+);
 
-bindForm("unblockUserForm", (v) => api("/api/admin/unblock-user", {
-  method: "POST",
-  body: { userId: Number(v.userId) }
-}));
+bindForm("unblockUserForm", (v) =>
+  api("/api/admin/unblock-user", {
+    method: "POST",
+    body: { userId: Number(v.userId) }
+  })
+);

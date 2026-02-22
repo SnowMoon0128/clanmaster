@@ -68,4 +68,18 @@ async function blacklist(req, res, next) {
   }
 }
 
-module.exports = { addPlayer, movePlayer, history, blacklist };
+async function blacklistList(req, res, next) {
+  try {
+    const clanId = Number(req.query.clanId);
+    if (!clanId) return res.status(400).json({ message: 'clanId query required' });
+    const result = await playerService.blacklistList({
+      requesterId: req.user.sub,
+      clanId
+    });
+    return res.json({ blacklist: result });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+module.exports = { addPlayer, movePlayer, history, blacklist, blacklistList };

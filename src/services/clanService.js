@@ -1,5 +1,11 @@
 ﻿const { pool } = require('../db/pool');
-const { isClanAdmin, listClanAdmins, addClanAdmin, writeAction } = require('../repositories/clanRepository');
+const {
+  isClanAdmin,
+  isClanOwner,
+  listClanAdmins,
+  addClanAdmin,
+  writeAction
+} = require('../repositories/clanRepository');
 const { findUserByEmail } = require('../repositories/userRepository');
 
 async function getAdmins(clanId, requesterId) {
@@ -13,9 +19,9 @@ async function getAdmins(clanId, requesterId) {
 }
 
 async function inviteAdmin({ clanId, requesterId, email }) {
-  const allowed = await isClanAdmin({ clanId, userId: requesterId });
-  if (!allowed) {
-    const error = new Error('Forbidden');
+  const ownerOnly = await isClanOwner({ clanId, userId: requesterId });
+  if (!ownerOnly) {
+    const error = new Error('Only clan owner can invite sub-admin');
     error.status = 403;
     throw error;
   }

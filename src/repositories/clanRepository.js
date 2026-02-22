@@ -25,6 +25,12 @@ async function isClanAdmin({ clanId, userId }) {
   return rows.length > 0;
 }
 
+async function isClanOwner({ clanId, userId }) {
+  const q = `SELECT 1 FROM clans WHERE id = $1 AND owner_user_id = $2`;
+  const { rows } = await pool.query(q, [clanId, userId]);
+  return rows.length > 0;
+}
+
 async function listClanAdmins(clanId) {
   const q = `
     SELECT u.id, u.email, u.display_name, u.role
@@ -45,4 +51,4 @@ async function writeAction(client, { actorUserId, actionType, targetType, target
   await client.query(q, [actorUserId, actionType, targetType, String(targetId), payload || null]);
 }
 
-module.exports = { createClan, addClanAdmin, isClanAdmin, listClanAdmins, writeAction };
+module.exports = { createClan, addClanAdmin, isClanAdmin, isClanOwner, listClanAdmins, writeAction };

@@ -12,6 +12,12 @@
   <body>
     <header class="nav nav-dashboard">
       <div class="brand">ClanMaster Dashboard</div>
+      <nav id="dashMenu" class="dash-menu">
+        <button type="button" data-target="section-clan" class="menu-btn active">클랜 관리</button>
+        <button type="button" data-target="section-invite" id="ownerInviteMenu" class="menu-btn hidden">부관리자 초대</button>
+        <button type="button" data-target="section-blacklist" class="menu-btn">블랙리스트 목록</button>
+        <button type="button" data-target="section-site-admin" id="siteAdminMenu" class="menu-btn hidden">사이트 관리자</button>
+      </nav>
       <div class="token-row">
         <input id="token" type="text" placeholder="JWT token" />
         <button id="saveTokenBtn" type="button">Save</button>
@@ -20,7 +26,7 @@
     </header>
 
     <main class="dash-layout">
-      <section class="card">
+      <section id="section-clan" class="card section-panel">
         <h2>Clan Operation</h2>
         <form id="addPlayerForm" class="form-grid two">
           <strong>Add or update player</strong>
@@ -52,8 +58,8 @@
         </form>
       </section>
 
-      <section class="card">
-        <h2>Clan Admin</h2>
+      <section id="section-invite" class="card section-panel hidden">
+        <h2>부관리자 초대 (클랜장 전용)</h2>
         <form id="listAdminsForm" class="form-grid two">
           <input name="clanId" type="number" placeholder="Clan ID" required />
           <button type="submit">List admins</button>
@@ -66,7 +72,15 @@
         </form>
       </section>
 
-      <section id="siteAdminSection" class="card hidden">
+      <section id="section-blacklist" class="card section-panel hidden">
+        <h2>Blacklist List</h2>
+        <form id="blacklistListForm" class="form-grid two">
+          <input name="clanId" type="number" placeholder="Clan ID" required />
+          <button type="submit">Load blacklist</button>
+        </form>
+      </section>
+
+      <section id="section-site-admin" class="card section-panel hidden">
         <h2>Site Admin Tools</h2>
         <form id="overviewForm" class="form-grid two">
           <button type="submit">System overview</button>

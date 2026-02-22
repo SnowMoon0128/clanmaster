@@ -59,10 +59,35 @@ async function addBlacklist(client, { playerId, clanId, reason, createdBy }) {
   return rows[0];
 }
 
+async function listBlacklistByClan(clanId) {
+  const q = `
+    SELECT
+      b.id,
+      b.clan_id,
+      c.name AS clan_name,
+      b.player_id,
+      p.game_uid,
+      p.nickname,
+      b.reason,
+      b.created_by,
+      u.display_name AS created_by_name,
+      b.created_at
+    FROM blacklist_entries b
+    JOIN players p ON p.id = b.player_id
+    JOIN clans c ON c.id = b.clan_id
+    JOIN app_users u ON u.id = b.created_by
+    WHERE b.clan_id = $1
+    ORDER BY b.created_at DESC
+  `;
+  const { rows } = await pool.query(q, [clanId]);
+  return rows;
+}
+
 module.exports = {
   upsertPlayer,
   closeActiveMembership,
   createMembership,
   getPlayerHistory,
-  addBlacklist
+  addBlacklist,
+  listBlacklistByClan
 };

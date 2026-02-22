@@ -5,7 +5,8 @@ const {
   closeActiveMembership,
   createMembership,
   getPlayerHistory,
-  addBlacklist
+  addBlacklist,
+  listBlacklistByClan
 } = require('../repositories/playerRepository');
 
 async function addOrUpdatePlayer({ requesterId, clanId, gameUid, nickname }) {
@@ -108,4 +109,14 @@ async function playerHistory(playerId) {
   return getPlayerHistory(playerId);
 }
 
-module.exports = { addOrUpdatePlayer, movePlayer, addToBlacklist, playerHistory };
+async function blacklistList({ requesterId, clanId }) {
+  const allowed = await isClanAdmin({ clanId, userId: requesterId });
+  if (!allowed) {
+    const error = new Error('Forbidden');
+    error.status = 403;
+    throw error;
+  }
+  return listBlacklistByClan(clanId);
+}
+
+module.exports = { addOrUpdatePlayer, movePlayer, addToBlacklist, playerHistory, blacklistList };

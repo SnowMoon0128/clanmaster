@@ -26,8 +26,11 @@
         <form id="loginForm" class="form-stack">
           <input name="email" type="email" placeholder="Email (normal login)" />
           <input name="password" type="password" placeholder="Password" required />
-          <input name="adminName" type="text" placeholder="Site admin name (JsonParc)" />
-          <input name="adminId" type="text" placeholder="Site admin ID (00000000)" />
+          <details class="admin-login-area">
+            <summary>Site admin login (hidden by default)</summary>
+            <input name="adminName" type="text" placeholder="Site admin name" />
+            <input name="adminId" type="text" placeholder="Site admin ID" />
+          </details>
           <button type="submit">Sign In</button>
         </form>
 
