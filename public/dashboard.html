@@ -56,6 +56,7 @@
 
       <section id="section-invite" class="card section-panel hidden">
         <h2>부관리자 초대 (클랜장 전용)</h2>
+        <p id="ownerInviteCode" class="muted small"></p>
         <form id="listAdminsForm" class="form-grid two">
           <button type="submit">List admins</button>
         </form>
@@ -63,6 +64,11 @@
         <form id="addAdminForm" class="form-grid two">
           <input name="email" type="email" placeholder="User email" required />
           <button type="submit">Add admin</button>
+        </form>
+
+        <form id="removeAdminForm" class="form-grid two">
+          <input name="userId" type="number" placeholder="Remove sub-admin user id" required />
+          <button type="submit">Remove admin</button>
         </form>
       </section>
 
@@ -79,6 +85,18 @@
 
       <section id="section-site-admin" class="card section-panel hidden">
         <h2>Site Admin Tools</h2>
+        <form id="pendingOwnersForm" class="form-grid two">
+          <button type="submit">List pending owners</button>
+        </form>
+        <form id="approveOwnerForm" class="form-grid two">
+          <input name="requestId" type="number" placeholder="Approve request id" required />
+          <button type="submit">Approve owner</button>
+        </form>
+        <form id="rejectOwnerForm" class="form-grid two">
+          <input name="requestId" type="number" placeholder="Reject request id" required />
+          <input name="reason" type="text" placeholder="Reject reason" />
+          <button type="submit">Reject owner</button>
+        </form>
         <form id="overviewForm" class="form-grid two">
           <button type="submit">System overview</button>
         </form>

@@ -58,9 +58,13 @@ bindForm("loginForm", (v) => {
 bindForm("ownerRegisterForm", (v) => api("/api/auth/register-owner", {
   method: "POST",
   body: { email: v.email, password: v.password, displayName: v.displayName, clanName: v.clanName }
-}));
+}), (data) => {
+  alert(data.message || "Owner request submitted");
+});
 
 bindForm("managerRegisterForm", (v) => api("/api/auth/register-manager", {
   method: "POST",
-  body: { email: v.email, password: v.password, displayName: v.displayName }
-}));
+  body: { email: v.email, password: v.password, displayName: v.displayName, inviteCode: v.inviteCode }
+}), () => {
+  alert("Manager account created and linked to clan.");
+});

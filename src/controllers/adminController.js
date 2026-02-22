@@ -38,4 +38,47 @@ async function unblockUser(req, res, next) {
   }
 }
 
-module.exports = { getOverview, blockUser, unblockUser };
+async function listPendingOwners(_req, res, next) {
+  try {
+    const rows = await adminService.listPendingOwners();
+    return res.json({ pendingOwners: rows });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function approvePendingOwner(req, res, next) {
+  try {
+    const requestId = Number(req.params.requestId);
+    const result = await adminService.approvePendingOwner({
+      actorId: req.user.sub,
+      requestId
+    });
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function rejectPendingOwner(req, res, next) {
+  try {
+    const requestId = Number(req.params.requestId);
+    const result = await adminService.rejectPendingOwner({
+      actorId: req.user.sub,
+      requestId,
+      reason: req.body.reason
+    });
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+module.exports = {
+  getOverview,
+  blockUser,
+  unblockUser,
+  listPendingOwners,
+  approvePendingOwner,
+  rejectPendingOwner
+};

@@ -14,7 +14,8 @@ const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   siteAdminName: process.env.SITE_ADMIN_NAME || 'JsonParc',
   siteAdminId: process.env.SITE_ADMIN_ID || '00000000',
-  siteAdminPassword: process.env.SITE_ADMIN_PASSWORD || '********'
+  siteAdminPassword: process.env.SITE_ADMIN_PASSWORD || '********',
+  siteAdminEmail: process.env.SITE_ADMIN_EMAIL || 'vibimbap@gmail.com'
 };
 
 module.exports = { env };

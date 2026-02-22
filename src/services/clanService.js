@@ -4,6 +4,7 @@ const {
   isClanOwner,
   listClanAdmins,
   addClanAdmin,
+  removeClanAdmin,
   writeAction
 } = require('../repositories/clanRepository');
 const { findUserByEmail } = require('../repositories/userRepository');
@@ -55,4 +56,45 @@ async function inviteAdmin({ clanId, requesterId, email }) {
   return { addedUserId: user.id, email: user.email };
 }
 
-module.exports = { getAdmins, inviteAdmin };
+async function removeAdminFromClan({ clanId, requesterId, userId }) {
+  const ownerOnly = await isClanOwner({ clanId, userId: requesterId });
+  if (!ownerOnly) {
+    const error = new Error('Only clan owner can remove sub-admin');
+    error.status = 403;
+    throw error;
+  }
+
+  const ownerTarget = await isClanOwner({ clanId, userId });
+  if (ownerTarget) {
+    const error = new Error('Owner cannot be removed');
+    error.status = 400;
+    throw error;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const removed = await removeClanAdmin(client, { clanId, userId });
+    if (!removed) {
+      const error = new Error('Clan admin not found');
+      error.status = 404;
+      throw error;
+    }
+    await writeAction(client, {
+      actorUserId: requesterId,
+      actionType: 'REMOVE_ADMIN',
+      targetType: 'user',
+      targetId: userId,
+      payload: { clanId }
+    });
+    await client.query('COMMIT');
+    return { removed: true, userId, clanId };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { getAdmins, inviteAdmin, removeAdminFromClan };

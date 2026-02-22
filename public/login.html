@@ -45,18 +45,20 @@
             <input name="clanName" type="text" placeholder="Clan name" required />
             <button type="submit">Create Owner</button>
           </form>
+          <p class="muted small">Owner signup requires site-admin approval. Contact: vibimbap@gmail.com</p>
 
           <form id="managerRegisterForm" class="form-grid two">
             <strong>Manager Register</strong>
             <input name="displayName" type="text" placeholder="Display name" required />
             <input name="email" type="email" placeholder="Email" required />
             <input name="password" type="password" placeholder="Password" required />
+            <input name="inviteCode" type="text" placeholder="6-hex invite code" required />
             <button type="submit">Create Manager</button>
           </form>
         </details>
       </section>
 
-      <section class="auth-log-card">
+      <section class="auth-log-card hidden">
         <h2>Response Log</h2>
         <pre id="output"></pre>
       </section>

@@ -1,9 +1,22 @@
+const crypto = require('crypto');
 const { pool } = require('../db/pool');
 const { env } = require('../config/env');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { signToken } = require('../utils/jwt');
-const { createUser, findUserByEmail } = require('../repositories/userRepository');
-const { createClan, addClanAdmin, writeAction } = require('../repositories/clanRepository');
+const {
+  createUser,
+  findUserByEmail,
+  countUserClanAssignments
+} = require('../repositories/userRepository');
+const { createClan, addClanAdmin, writeAction, findClanByInviteCode } = require('../repositories/clanRepository');
+const {
+  findOwnerRequestByEmail,
+  createOwnerRequest
+} = require('../repositories/ownerRequestRepository');
+
+function generateInviteCode() {
+  return crypto.randomBytes(3).toString('hex');
+}
 
 async function registerOwner({ email, password, displayName, clanName }) {
   const exists = await findUserByEmail(email);
@@ -13,27 +26,41 @@ async function registerOwner({ email, password, displayName, clanName }) {
     throw error;
   }
 
+  const reqExists = await findOwnerRequestByEmail(email);
+  if (reqExists && reqExists.status === 'pending') {
+    return {
+      status: 'pending',
+      message: `Owner signup already pending. Contact site admin: ${env.siteAdminEmail}`
+    };
+  }
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-
     const passwordHash = await hashPassword(password);
-    const user = await createUser(client, { email, passwordHash, displayName, role: 'owner' });
-    const clan = await createClan(client, { name: clanName, ownerUserId: user.id });
-    await addClanAdmin(client, { clanId: clan.id, userId: user.id, addedBy: user.id });
+    const inviteCode = generateInviteCode();
+    const request = await createOwnerRequest(client, {
+      email,
+      passwordHash,
+      displayName,
+      clanName,
+      inviteCode
+    });
 
     await writeAction(client, {
-      actorUserId: user.id,
-      actionType: 'REGISTER_OWNER',
-      targetType: 'clan',
-      targetId: clan.id,
-      payload: { clanName: clan.name }
+      actorUserId: null,
+      actionType: 'OWNER_SIGNUP_REQUESTED',
+      targetType: 'owner_signup_request',
+      targetId: request.id,
+      payload: { email, clanName, inviteCode }
     });
 
     await client.query('COMMIT');
-
-    const token = signToken({ sub: user.id, email: user.email, role: user.role, clanId: clan.id });
-    return { user, clan, token };
+    return {
+      status: 'pending',
+      requestId: request.id,
+      message: `Signup pending approval. Contact site admin: ${env.siteAdminEmail}`
+    };
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -42,7 +69,20 @@ async function registerOwner({ email, password, displayName, clanName }) {
   }
 }
 
-async function registerManager({ email, password, displayName }) {
+async function registerManager({ email, password, displayName, inviteCode }) {
+  if (!inviteCode) {
+    const error = new Error('inviteCode required');
+    error.status = 400;
+    throw error;
+  }
+
+  const clan = await findClanByInviteCode(inviteCode);
+  if (!clan) {
+    const error = new Error('Invalid invite code');
+    error.status = 404;
+    throw error;
+  }
+
   const exists = await findUserByEmail(email);
   if (exists) {
     const error = new Error('Email already exists');
@@ -55,17 +95,18 @@ async function registerManager({ email, password, displayName }) {
     await client.query('BEGIN');
     const passwordHash = await hashPassword(password);
     const user = await createUser(client, { email, passwordHash, displayName, role: 'manager' });
+    await addClanAdmin(client, { clanId: clan.id, userId: user.id, addedBy: clan.owner_user_id });
     await writeAction(client, {
-      actorUserId: user.id,
-      actionType: 'REGISTER_MANAGER',
+      actorUserId: null,
+      actionType: 'REGISTER_MANAGER_WITH_CODE',
       targetType: 'user',
       targetId: user.id,
-      payload: null
+      payload: { clanId: clan.id, inviteCode }
     });
     await client.query('COMMIT');
 
     const token = signToken({ sub: user.id, email: user.email, role: user.role });
-    return { user, token };
+    return { user, token, clan: { id: clan.id, name: clan.name } };
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -93,6 +134,15 @@ async function login({ email, password }) {
     const error = new Error('Blocked user');
     error.status = 403;
     throw error;
+  }
+
+  if (user.role === 'manager') {
+    const cnt = await countUserClanAssignments(user.id);
+    if (cnt <= 0) {
+      const error = new Error('No clan assigned. Login blocked.');
+      error.status = 403;
+      throw error;
+    }
   }
 
   const token = signToken({ sub: user.id, email: user.email, role: user.role });

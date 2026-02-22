@@ -43,4 +43,14 @@ async function setUserBlocked(client, { userId, blocked, reason }) {
   return rows[0] || null;
 }
 
-module.exports = { createUser, findUserByEmail, findUserById, setUserBlocked };
+async function countUserClanAssignments(userId) {
+  const q = `
+    SELECT COUNT(*)::INT AS cnt
+    FROM clan_admins
+    WHERE user_id = $1
+  `;
+  const { rows } = await pool.query(q, [userId]);
+  return rows[0]?.cnt || 0;
+}
+
+module.exports = { createUser, findUserByEmail, findUserById, setUserBlocked, countUserClanAssignments };

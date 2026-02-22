@@ -4,6 +4,7 @@ const siteAdminMenu = document.getElementById("siteAdminMenu");
 const ownerInviteMenu = document.getElementById("ownerInviteMenu");
 const dashMenu = document.getElementById("dashMenu");
 const sessionBadge = document.getElementById("sessionBadge");
+const ownerInviteCode = document.getElementById("ownerInviteCode");
 
 const token = localStorage.getItem("cm_token") || "";
 const role = localStorage.getItem("cm_role") || "";
@@ -142,7 +143,29 @@ bindForm("addAdminForm", (v) =>
   })
 );
 
+bindForm("removeAdminForm", (v) =>
+  api(`/api/clans/admins/me/${Number(v.userId)}`, {
+    method: "DELETE"
+  })
+);
+
 bindForm("overviewForm", () => api("/api/admin/overview"));
+
+bindForm("pendingOwnersForm", () => api("/api/admin/pending-owners"));
+
+bindForm("approveOwnerForm", (v) =>
+  api(`/api/admin/pending-owners/${Number(v.requestId)}/approve`, {
+    method: "POST",
+    body: {}
+  })
+);
+
+bindForm("rejectOwnerForm", (v) =>
+  api(`/api/admin/pending-owners/${Number(v.requestId)}/reject`, {
+    method: "POST",
+    body: { reason: v.reason || null }
+  })
+);
 
 bindForm("blockUserForm", (v) =>
   api("/api/admin/block-user", {
@@ -162,3 +185,12 @@ loadSession().catch((error) => {
   alert(error.message);
   window.location.href = "/login";
 });
+
+if (role === "owner") {
+  api("/api/clans/admins/me")
+    .then((data) => {
+      const code = data?.clan?.invite_code;
+      if (code && ownerInviteCode) ownerInviteCode.textContent = `Invite code: ${code}`;
+    })
+    .catch(() => {});
+}

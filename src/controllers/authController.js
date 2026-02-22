@@ -16,11 +16,11 @@ async function registerOwner(req, res, next) {
 
 async function registerManager(req, res, next) {
   try {
-    const { email, password, displayName } = req.body;
-    if (!email || !password || !displayName) {
-      return res.status(400).json({ message: 'email, password, displayName required' });
+    const { email, password, displayName, inviteCode } = req.body;
+    if (!email || !password || !displayName || !inviteCode) {
+      return res.status(400).json({ message: 'email, password, displayName, inviteCode required' });
     }
-    const result = await authService.registerManager({ email, password, displayName });
+    const result = await authService.registerManager({ email, password, displayName, inviteCode });
     return res.status(201).json(result);
   } catch (error) {
     return next(error);

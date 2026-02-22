@@ -54,4 +54,20 @@ async function topBlacklistedPlayers(limit = 10) {
   return rows;
 }
 
-module.exports = { listClanManagersWithClans, listClansWithActiveMembers, topBlacklistedPlayers };
+async function listPendingOwnerRequestsRepo() {
+  const q = `
+    SELECT id, email, display_name, clan_name, invite_code, status, created_at
+    FROM owner_signup_requests
+    WHERE status = 'pending'
+    ORDER BY created_at ASC
+  `;
+  const { rows } = await pool.query(q);
+  return rows;
+}
+
+module.exports = {
+  listClanManagersWithClans,
+  listClansWithActiveMembers,
+  topBlacklistedPlayers,
+  listPendingOwnerRequestsRepo
+};

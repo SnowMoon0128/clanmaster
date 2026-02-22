@@ -17,7 +17,25 @@ ALTER TABLE app_users ADD COLUMN IF NOT EXISTS blocked_at TIMESTAMPTZ;
 CREATE TABLE IF NOT EXISTS clans (
   id BIGSERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
+  invite_code TEXT UNIQUE,
   owner_user_id BIGINT NOT NULL REFERENCES app_users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE clans ADD COLUMN IF NOT EXISTS invite_code TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_clans_invite_code ON clans(invite_code) WHERE invite_code IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS owner_signup_requests (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  clan_name TEXT NOT NULL,
+  invite_code TEXT UNIQUE NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
+  approved_by TEXT,
+  reject_reason TEXT,
+  processed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

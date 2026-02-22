@@ -148,6 +148,10 @@ body {
   color: var(--muted);
 }
 
+.muted.small {
+  font-size: 0.85rem;
+}
+
 .register-area {
   margin-top: 12px;
 }
