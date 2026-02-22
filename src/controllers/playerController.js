@@ -74,7 +74,8 @@ async function blacklistList(req, res, next) {
     if (!clanId) return res.status(400).json({ message: 'clanId query required' });
     const result = await playerService.blacklistList({
       requesterId: req.user.sub,
-      clanId
+      clanId,
+      role: req.user.role
     });
     return res.json({ blacklist: result });
   } catch (error) {
@@ -82,4 +83,23 @@ async function blacklistList(req, res, next) {
   }
 }
 
-module.exports = { addPlayer, movePlayer, history, blacklist, blacklistList };
+async function unblacklist(req, res, next) {
+  try {
+    const entryId = Number(req.params.entryId);
+    const clanId = Number(req.query.clanId);
+    if (!entryId || !clanId) {
+      return res.status(400).json({ message: 'entryId param and clanId query required' });
+    }
+    const result = await playerService.removeFromBlacklist({
+      requesterId: req.user.sub,
+      clanId,
+      entryId,
+      role: req.user.role
+    });
+    return res.json({ removed: result });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+module.exports = { addPlayer, movePlayer, history, blacklist, blacklistList, unblacklist };

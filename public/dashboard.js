@@ -120,6 +120,12 @@ bindForm("blacklistForm", (v) =>
 
 bindForm("blacklistListForm", (v) => api(`/api/blacklist?clanId=${Number(v.clanId)}`));
 
+bindForm("unblacklistForm", (v) =>
+  api(`/api/blacklist/${Number(v.entryId)}?clanId=${Number(v.clanId)}`, {
+    method: "DELETE"
+  })
+);
+
 bindForm("listAdminsForm", (v) => api(`/api/clans/${Number(v.clanId)}/admins`));
 
 bindForm("addAdminForm", (v) =>

@@ -5,7 +5,8 @@ const {
   movePlayer,
   history,
   blacklist,
-  blacklistList
+  blacklistList,
+  unblacklist
 } = require('../controllers/playerController');
 
 const router = express.Router();
@@ -15,5 +16,6 @@ router.post('/players/:playerId/move', authRequired, movePlayer);
 router.get('/players/:playerId/history', authRequired, history);
 router.post('/blacklist', authRequired, blacklist);
 router.get('/blacklist', authRequired, blacklistList);
+router.delete('/blacklist/:entryId', authRequired, unblacklist);
 
 module.exports = router;

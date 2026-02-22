@@ -1,4 +1,24 @@
-﻿const { pool } = require('../db/pool');
+const { pool } = require('../db/pool');
+
+async function getPlayerByGameUid(gameUid) {
+  const q = `
+    SELECT id, game_uid, nickname
+    FROM players
+    WHERE game_uid = $1
+  `;
+  const { rows } = await pool.query(q, [gameUid]);
+  return rows[0] || null;
+}
+
+async function findPlayersByNickname(nickname) {
+  const q = `
+    SELECT id, game_uid, nickname
+    FROM players
+    WHERE nickname = $1
+  `;
+  const { rows } = await pool.query(q, [nickname]);
+  return rows;
+}
 
 async function upsertPlayer(client, { gameUid, nickname }) {
   const q = `
@@ -83,11 +103,44 @@ async function listBlacklistByClan(clanId) {
   return rows;
 }
 
+async function removeBlacklistEntry(client, { entryId, clanId }) {
+  const q = `
+    DELETE FROM blacklist_entries
+    WHERE id = $1 AND clan_id = $2
+    RETURNING id, player_id, clan_id, reason, created_by, created_at
+  `;
+  const { rows } = await client.query(q, [entryId, clanId]);
+  return rows[0] || null;
+}
+
+async function writeIdentityEvent(client, payload) {
+  const q = `
+    INSERT INTO player_identity_events (
+      player_id, game_uid, input_nickname, stored_nickname, event_type, actor_user_id, clan_id, note
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+  `;
+  await client.query(q, [
+    payload.playerId || null,
+    payload.gameUid,
+    payload.inputNickname,
+    payload.storedNickname || null,
+    payload.eventType,
+    payload.actorUserId || null,
+    payload.clanId || null,
+    payload.note || null
+  ]);
+}
+
 module.exports = {
+  getPlayerByGameUid,
+  findPlayersByNickname,
   upsertPlayer,
   closeActiveMembership,
   createMembership,
   getPlayerHistory,
   addBlacklist,
-  listBlacklistByClan
+  listBlacklistByClan,
+  removeBlacklistEntry,
+  writeIdentityEvent
 };

@@ -64,9 +64,23 @@ CREATE TABLE IF NOT EXISTS admin_actions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS player_identity_events (
+  id BIGSERIAL PRIMARY KEY,
+  player_id BIGINT REFERENCES players(id) ON DELETE SET NULL,
+  game_uid TEXT NOT NULL,
+  input_nickname TEXT NOT NULL,
+  stored_nickname TEXT,
+  event_type TEXT NOT NULL,
+  actor_user_id BIGINT REFERENCES app_users(id),
+  clan_id BIGINT REFERENCES clans(id) ON DELETE SET NULL,
+  note TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_memberships_player_id ON clan_memberships(player_id);
 CREATE INDEX IF NOT EXISTS idx_memberships_clan_id ON clan_memberships(clan_id);
 CREATE INDEX IF NOT EXISTS idx_memberships_active ON clan_memberships(player_id) WHERE left_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_blacklist_player_clan ON blacklist_entries(player_id, clan_id);
 CREATE INDEX IF NOT EXISTS idx_actions_actor_created_at ON admin_actions(actor_user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_app_users_blocked ON app_users(is_blocked);
+CREATE INDEX IF NOT EXISTS idx_identity_events_game_uid ON player_identity_events(game_uid);
