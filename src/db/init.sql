@@ -1,0 +1,72 @@
+CREATE TABLE IF NOT EXISTS app_users (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('owner', 'manager')),
+  is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
+  blocked_reason TEXT,
+  blocked_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS blocked_reason TEXT;
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS blocked_at TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS clans (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL,
+  owner_user_id BIGINT NOT NULL REFERENCES app_users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS clan_admins (
+  clan_id BIGINT NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+  added_by BIGINT REFERENCES app_users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (clan_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS players (
+  id BIGSERIAL PRIMARY KEY,
+  game_uid TEXT UNIQUE NOT NULL,
+  nickname TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS clan_memberships (
+  id BIGSERIAL PRIMARY KEY,
+  player_id BIGINT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  clan_id BIGINT NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+  joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  left_at TIMESTAMPTZ,
+  CHECK (left_at IS NULL OR left_at > joined_at)
+);
+
+CREATE TABLE IF NOT EXISTS blacklist_entries (
+  id BIGSERIAL PRIMARY KEY,
+  player_id BIGINT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  clan_id BIGINT NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+  reason TEXT,
+  created_by BIGINT NOT NULL REFERENCES app_users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS admin_actions (
+  id BIGSERIAL PRIMARY KEY,
+  actor_user_id BIGINT REFERENCES app_users(id),
+  action_type TEXT NOT NULL,
+  target_type TEXT NOT NULL,
+  target_id TEXT NOT NULL,
+  payload JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_memberships_player_id ON clan_memberships(player_id);
+CREATE INDEX IF NOT EXISTS idx_memberships_clan_id ON clan_memberships(clan_id);
+CREATE INDEX IF NOT EXISTS idx_memberships_active ON clan_memberships(player_id) WHERE left_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_blacklist_player_clan ON blacklist_entries(player_id, clan_id);
+CREATE INDEX IF NOT EXISTS idx_actions_actor_created_at ON admin_actions(actor_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_app_users_blocked ON app_users(is_blocked);
