@@ -14,7 +14,7 @@
       <div class="brand">ClanMaster Dashboard</div>
       <nav id="dashMenu" class="dash-menu">
         <button type="button" data-target="section-clan" class="menu-btn active">클랜 관리</button>
-        <button type="button" data-target="section-invite" id="ownerInviteMenu" class="menu-btn hidden">부관리자 초대</button>
+        <button type="button" data-target="section-invite" id="ownerInviteMenu" class="menu-btn hidden">부관리자 코드</button>
         <button type="button" data-target="section-blacklist" class="menu-btn">블랙리스트 목록</button>
         <button type="button" data-target="section-site-admin" id="siteAdminMenu" class="menu-btn hidden">사이트 관리자</button>
       </nav>
@@ -34,40 +34,30 @@
           <button type="submit">Save</button>
         </form>
 
-        <form id="movePlayerForm" class="form-grid two">
-          <strong>Move player</strong>
-          <input name="playerId" type="number" placeholder="Player PK ID" required />
-          <button type="submit">Move</button>
-        </form>
-
         <form id="historyForm" class="form-grid two">
           <strong>Player history</strong>
-          <input name="playerId" type="number" placeholder="Player PK ID" required />
+          <input name="playerId" type="text" inputmode="numeric" placeholder="Player PK ID" required />
           <button type="submit">History</button>
         </form>
 
         <form id="blacklistForm" class="form-grid two">
           <strong>Blacklist</strong>
-          <input name="playerId" type="number" placeholder="Player PK ID" required />
+          <input name="playerId" type="text" inputmode="numeric" placeholder="Player PK ID" required />
           <input name="reason" type="text" placeholder="Reason" />
           <button type="submit">Add</button>
         </form>
       </section>
 
       <section id="section-invite" class="card section-panel hidden">
-        <h2>부관리자 초대 (클랜장 전용)</h2>
+        <h2>부관리자 가입 코드 (클랜장 전용)</h2>
         <p id="ownerInviteCode" class="muted small"></p>
+        <p class="muted small">부관리자는 로그인 페이지의 Manager Register에서 이 코드를 입력해 가입합니다.</p>
         <form id="listAdminsForm" class="form-grid two">
           <button type="submit">List admins</button>
         </form>
 
-        <form id="addAdminForm" class="form-grid two">
-          <input name="email" type="email" placeholder="User email" required />
-          <button type="submit">Add admin</button>
-        </form>
-
         <form id="removeAdminForm" class="form-grid two">
-          <input name="userId" type="number" placeholder="Remove sub-admin user id" required />
+          <input name="userId" type="text" inputmode="numeric" placeholder="Remove sub-admin user id" required />
           <button type="submit">Remove admin</button>
         </form>
       </section>
@@ -78,7 +68,7 @@
           <button type="submit">Load blacklist</button>
         </form>
         <form id="unblacklistForm" class="form-grid two">
-          <input name="entryId" type="number" placeholder="Blacklist Entry ID" required />
+          <input name="entryId" type="text" inputmode="numeric" placeholder="Blacklist Entry ID" required />
           <button type="submit">Remove from blacklist</button>
         </form>
       </section>
@@ -89,11 +79,11 @@
           <button type="submit">List pending owners</button>
         </form>
         <form id="approveOwnerForm" class="form-grid two">
-          <input name="requestId" type="number" placeholder="Approve request id" required />
+          <input name="requestId" type="text" inputmode="numeric" placeholder="Approve request id" required />
           <button type="submit">Approve owner</button>
         </form>
         <form id="rejectOwnerForm" class="form-grid two">
-          <input name="requestId" type="number" placeholder="Reject request id" required />
+          <input name="requestId" type="text" inputmode="numeric" placeholder="Reject request id" required />
           <input name="reason" type="text" placeholder="Reject reason" />
           <button type="submit">Reject owner</button>
         </form>
@@ -102,13 +92,13 @@
         </form>
 
         <form id="blockUserForm" class="form-grid two">
-          <input name="userId" type="number" placeholder="Block app_users.id" required />
+          <input name="userId" type="text" inputmode="numeric" placeholder="Block app_users.id" required />
           <input name="reason" type="text" placeholder="Reason" />
           <button type="submit">Block user</button>
         </form>
 
         <form id="unblockUserForm" class="form-grid two">
-          <input name="userId" type="number" placeholder="Unblock app_users.id" required />
+          <input name="userId" type="text" inputmode="numeric" placeholder="Unblock app_users.id" required />
           <button type="submit">Unblock user</button>
         </form>
       </section>

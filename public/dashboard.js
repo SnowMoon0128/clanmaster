@@ -105,13 +105,6 @@ bindForm("addPlayerForm", (v) =>
   })
 );
 
-bindForm("movePlayerForm", (v) =>
-  api(`/api/players/${Number(v.playerId)}/move`, {
-    method: "POST",
-    body: withClan({})
-  })
-);
-
 bindForm("historyForm", (v) => api(`/api/players/${Number(v.playerId)}/history`));
 
 bindForm("blacklistForm", (v) =>
@@ -135,13 +128,6 @@ bindForm("unblacklistForm", (v) =>
 );
 
 bindForm("listAdminsForm", () => api("/api/clans/admins/me"));
-
-bindForm("addAdminForm", (v) =>
-  api("/api/clans/admins/me", {
-    method: "POST",
-    body: withClan({ email: v.email })
-  })
-);
 
 bindForm("removeAdminForm", (v) =>
   api(`/api/clans/admins/me/${Number(v.userId)}`, {
