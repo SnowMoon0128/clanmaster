@@ -1,19 +1,35 @@
+const loginView = document.getElementById("loginView");
+const dashboardView = document.getElementById("dashboardView");
+const siteAdminSection = document.getElementById("siteAdminSection");
+
 const tokenInput = document.getElementById("token");
 const output = document.getElementById("output");
 
-const storedToken = localStorage.getItem("cm_token");
-if (storedToken) tokenInput.value = storedToken;
+const savedToken = localStorage.getItem("cm_token") || "";
+const savedRole = localStorage.getItem("cm_role") || "";
+if (savedToken) tokenInput.value = savedToken;
+
+setView(Boolean(savedToken), savedRole);
 
 document.getElementById("saveTokenBtn").addEventListener("click", () => {
-  localStorage.setItem("cm_token", tokenInput.value.trim());
+  const token = tokenInput.value.trim();
+  localStorage.setItem("cm_token", token);
   print({ message: "token saved" });
 });
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
   tokenInput.value = "";
   localStorage.removeItem("cm_token");
+  localStorage.removeItem("cm_role");
+  setView(false, "");
   print({ message: "logged out" });
 });
+
+function setView(isLoggedIn, role) {
+  loginView.classList.toggle("hidden", isLoggedIn);
+  dashboardView.classList.toggle("hidden", !isLoggedIn);
+  siteAdminSection.classList.toggle("hidden", role !== "site_admin");
+}
 
 function getToken() {
   return tokenInput.value.trim();
@@ -36,7 +52,7 @@ async function api(path, { method = "GET", body, auth = false } = {}) {
   const headers = { "Content-Type": "application/json" };
   if (auth) {
     const token = getToken();
-    if (!token) throw new Error("JWT token이 필요합니다.");
+    if (!token) throw new Error("JWT token is required.");
     headers.Authorization = `Bearer ${token}`;
   }
 
@@ -46,12 +62,14 @@ async function api(path, { method = "GET", body, auth = false } = {}) {
     body: body ? JSON.stringify(body) : undefined
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "요청 실패");
+  if (!res.ok) throw new Error(data.message || "Request failed");
   return data;
 }
 
-async function handleForm(formId, handler) {
+function bindForm(formId, handler) {
   const form = document.getElementById(formId);
+  if (!form) return;
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     try {
@@ -60,6 +78,10 @@ async function handleForm(formId, handler) {
         tokenInput.value = data.token;
         localStorage.setItem("cm_token", data.token);
       }
+      if (data.user?.role) {
+        localStorage.setItem("cm_role", data.user.role);
+        setView(true, data.user.role);
+      }
       print(data);
     } catch (err) {
       print({ error: err.message });
@@ -67,7 +89,7 @@ async function handleForm(formId, handler) {
   });
 }
 
-handleForm("loginForm", (v) => {
+bindForm("loginForm", (v) => {
   const body = {};
   if (v.email) body.email = v.email;
   if (v.adminName) body.adminName = v.adminName;
@@ -76,21 +98,21 @@ handleForm("loginForm", (v) => {
   return api("/api/auth/login", { method: "POST", body });
 });
 
-handleForm("ownerRegisterForm", (v) =>
+bindForm("ownerRegisterForm", (v) =>
   api("/api/auth/register-owner", {
     method: "POST",
     body: { email: v.email, password: v.password, displayName: v.displayName, clanName: v.clanName }
   })
 );
 
-handleForm("managerRegisterForm", (v) =>
+bindForm("managerRegisterForm", (v) =>
   api("/api/auth/register-manager", {
     method: "POST",
     body: { email: v.email, password: v.password, displayName: v.displayName }
   })
 );
 
-handleForm("addPlayerForm", (v) =>
+bindForm("addPlayerForm", (v) =>
   api("/api/players", {
     method: "POST",
     auth: true,
@@ -98,7 +120,7 @@ handleForm("addPlayerForm", (v) =>
   })
 );
 
-handleForm("movePlayerForm", (v) =>
+bindForm("movePlayerForm", (v) =>
   api(`/api/players/${Number(v.playerId)}/move`, {
     method: "POST",
     auth: true,
@@ -106,13 +128,13 @@ handleForm("movePlayerForm", (v) =>
   })
 );
 
-handleForm("historyForm", (v) =>
+bindForm("historyForm", (v) =>
   api(`/api/players/${Number(v.playerId)}/history`, {
     auth: true
   })
 );
 
-handleForm("blacklistForm", (v) =>
+bindForm("blacklistForm", (v) =>
   api("/api/blacklist", {
     method: "POST",
     auth: true,
@@ -120,13 +142,13 @@ handleForm("blacklistForm", (v) =>
   })
 );
 
-handleForm("listAdminsForm", (v) =>
+bindForm("listAdminsForm", (v) =>
   api(`/api/clans/${Number(v.clanId)}/admins`, {
     auth: true
   })
 );
 
-handleForm("addAdminForm", (v) =>
+bindForm("addAdminForm", (v) =>
   api(`/api/clans/${Number(v.clanId)}/admins`, {
     method: "POST",
     auth: true,
@@ -134,13 +156,13 @@ handleForm("addAdminForm", (v) =>
   })
 );
 
-handleForm("overviewForm", () =>
+bindForm("overviewForm", () =>
   api("/api/admin/overview", {
     auth: true
   })
 );
 
-handleForm("blockUserForm", (v) =>
+bindForm("blockUserForm", (v) =>
   api("/api/admin/block-user", {
     method: "POST",
     auth: true,
@@ -148,7 +170,7 @@ handleForm("blockUserForm", (v) =>
   })
 );
 
-handleForm("unblockUserForm", (v) =>
+bindForm("unblockUserForm", (v) =>
   api("/api/admin/unblock-user", {
     method: "POST",
     auth: true,
