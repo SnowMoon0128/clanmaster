@@ -247,8 +247,17 @@ button:hover,
 
 .token-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto auto;
+  grid-template-columns: auto auto;
   gap: 8px;
+}
+
+.session-badge {
+  display: inline-block;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 0.9rem;
 }
 
 .dash-layout {

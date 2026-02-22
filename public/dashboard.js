@@ -1,9 +1,9 @@
-const tokenInput = document.getElementById("token");
 const output = document.getElementById("output");
 const siteAdminSection = document.getElementById("section-site-admin");
 const siteAdminMenu = document.getElementById("siteAdminMenu");
 const ownerInviteMenu = document.getElementById("ownerInviteMenu");
 const dashMenu = document.getElementById("dashMenu");
+const sessionBadge = document.getElementById("sessionBadge");
 
 const token = localStorage.getItem("cm_token") || "";
 const role = localStorage.getItem("cm_role") || "";
@@ -12,7 +12,8 @@ if (!token) {
   window.location.href = "/login";
 }
 
-tokenInput.value = token;
+let currentClanId = null;
+
 if (role === "site_admin") {
   siteAdminSection.classList.remove("hidden");
   siteAdminMenu.classList.remove("hidden");
@@ -20,11 +21,6 @@ if (role === "site_admin") {
 if (role === "owner") {
   ownerInviteMenu.classList.remove("hidden");
 }
-
-document.getElementById("saveTokenBtn").addEventListener("click", () => {
-  localStorage.setItem("cm_token", tokenInput.value.trim());
-  print({ message: "token saved" });
-});
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
   localStorage.removeItem("cm_token");
@@ -36,38 +32,30 @@ dashMenu.addEventListener("click", (e) => {
   const btn = e.target.closest(".menu-btn");
   if (!btn) return;
 
-  for (const item of dashMenu.querySelectorAll(".menu-btn")) {
-    item.classList.remove("active");
-  }
+  for (const item of dashMenu.querySelectorAll(".menu-btn")) item.classList.remove("active");
   btn.classList.add("active");
 
-  for (const panel of document.querySelectorAll(".section-panel")) {
-    panel.classList.add("hidden");
-  }
-
+  for (const panel of document.querySelectorAll(".section-panel")) panel.classList.add("hidden");
   const targetPanel = document.getElementById(btn.dataset.target);
   if (targetPanel) targetPanel.classList.remove("hidden");
 });
 
 function print(data) {
-  output.textContent = JSON.stringify(data, null, 2);
+  if (output) output.textContent = JSON.stringify(data, null, 2);
 }
 
 function formToObj(form) {
   const fd = new FormData(form);
   const obj = {};
-  for (const [key, value] of fd.entries()) {
-    obj[key] = typeof value === "string" ? value.trim() : value;
-  }
+  for (const [key, value] of fd.entries()) obj[key] = typeof value === "string" ? value.trim() : value;
   return obj;
 }
 
 async function api(path, { method = "GET", body, auth = true } = {}) {
   const headers = { "Content-Type": "application/json" };
   if (auth) {
-    const currentToken = tokenInput.value.trim();
-    if (!currentToken) throw new Error("JWT token is required.");
-    headers.Authorization = `Bearer ${currentToken}`;
+    if (!token) throw new Error("JWT token is required.");
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const res = await fetch(path, {
@@ -80,10 +68,23 @@ async function api(path, { method = "GET", body, auth = true } = {}) {
   return data;
 }
 
+async function loadSession() {
+  const me = await api("/api/auth/me");
+  currentClanId = me?.user?.clanId || null;
+  const roleLabel = me?.user?.role || role;
+  sessionBadge.textContent = currentClanId
+    ? `${roleLabel} | clan:${currentClanId}`
+    : `${roleLabel} | no clan`;
+}
+
+function withClan(body) {
+  if (currentClanId) return { ...body, clanId: currentClanId };
+  return body;
+}
+
 function bindForm(formId, handler) {
   const form = document.getElementById(formId);
   if (!form) return;
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     try {
@@ -91,6 +92,7 @@ function bindForm(formId, handler) {
       print(data);
     } catch (error) {
       print({ error: error.message });
+      alert(error.message);
     }
   });
 }
@@ -98,14 +100,14 @@ function bindForm(formId, handler) {
 bindForm("addPlayerForm", (v) =>
   api("/api/players", {
     method: "POST",
-    body: { clanId: Number(v.clanId), gameUid: v.gameUid, nickname: v.nickname }
+    body: withClan({ gameUid: v.gameUid, nickname: v.nickname })
   })
 );
 
 bindForm("movePlayerForm", (v) =>
   api(`/api/players/${Number(v.playerId)}/move`, {
     method: "POST",
-    body: { clanId: Number(v.clanId) }
+    body: withClan({})
   })
 );
 
@@ -114,24 +116,29 @@ bindForm("historyForm", (v) => api(`/api/players/${Number(v.playerId)}/history`)
 bindForm("blacklistForm", (v) =>
   api("/api/blacklist", {
     method: "POST",
-    body: { clanId: Number(v.clanId), playerId: Number(v.playerId), reason: v.reason || null }
+    body: withClan({ playerId: Number(v.playerId), reason: v.reason || null })
   })
 );
 
-bindForm("blacklistListForm", (v) => api(`/api/blacklist?clanId=${Number(v.clanId)}`));
+bindForm("blacklistListForm", () =>
+  api(currentClanId ? `/api/blacklist?clanId=${currentClanId}` : "/api/blacklist")
+);
 
 bindForm("unblacklistForm", (v) =>
-  api(`/api/blacklist/${Number(v.entryId)}?clanId=${Number(v.clanId)}`, {
-    method: "DELETE"
-  })
+  api(
+    currentClanId
+      ? `/api/blacklist/${Number(v.entryId)}?clanId=${currentClanId}`
+      : `/api/blacklist/${Number(v.entryId)}`,
+    { method: "DELETE" }
+  )
 );
 
-bindForm("listAdminsForm", (v) => api(`/api/clans/${Number(v.clanId)}/admins`));
+bindForm("listAdminsForm", () => api("/api/clans/admins/me"));
 
 bindForm("addAdminForm", (v) =>
-  api(`/api/clans/${Number(v.clanId)}/admins`, {
+  api("/api/clans/admins/me", {
     method: "POST",
-    body: { email: v.email }
+    body: withClan({ email: v.email })
   })
 );
 
@@ -150,3 +157,8 @@ bindForm("unblockUserForm", (v) =>
     body: { userId: Number(v.userId) }
   })
 );
+
+loadSession().catch((error) => {
+  alert(error.message);
+  window.location.href = "/login";
+});

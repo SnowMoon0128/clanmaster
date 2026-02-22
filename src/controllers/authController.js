@@ -1,4 +1,5 @@
-﻿const authService = require('../services/authService');
+const authService = require('../services/authService');
+const { resolveClanIdForUser } = require('../services/clanScopeService');
 
 async function registerOwner(req, res, next) {
   try {
@@ -58,4 +59,29 @@ async function siteAdminLogin(req, res, next) {
   }
 }
 
-module.exports = { registerOwner, registerManager, login, siteAdminLogin };
+async function me(req, res, next) {
+  try {
+    let clanId = null;
+    try {
+      clanId = await resolveClanIdForUser({
+        userId: req.user.sub,
+        role: req.user.role,
+        clanIdInput: null
+      });
+    } catch (_err) {
+      clanId = null;
+    }
+    return res.json({
+      user: {
+        id: req.user.sub,
+        email: req.user.email || null,
+        role: req.user.role,
+        clanId
+      }
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+module.exports = { registerOwner, registerManager, login, siteAdminLogin, me };

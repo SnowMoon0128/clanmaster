@@ -1,15 +1,22 @@
-﻿const playerService = require('../services/playerService');
+const playerService = require('../services/playerService');
+const { resolveClanIdForUser } = require('../services/clanScopeService');
 
 async function addPlayer(req, res, next) {
   try {
     const { clanId, gameUid, nickname } = req.body;
-    if (!clanId || !gameUid || !nickname) {
-      return res.status(400).json({ message: 'clanId, gameUid, nickname required' });
+    if (!gameUid || !nickname) {
+      return res.status(400).json({ message: 'gameUid, nickname required' });
     }
+
+    const scopedClanId = await resolveClanIdForUser({
+      userId: req.user.sub,
+      role: req.user.role,
+      clanIdInput: clanId
+    });
 
     const result = await playerService.addOrUpdatePlayer({
       requesterId: req.user.sub,
-      clanId: Number(clanId),
+      clanId: scopedClanId,
       gameUid,
       nickname
     });
@@ -24,11 +31,15 @@ async function movePlayer(req, res, next) {
   try {
     const { clanId } = req.body;
     const playerId = Number(req.params.playerId);
-    if (!clanId) return res.status(400).json({ message: 'clanId required' });
+    const scopedClanId = await resolveClanIdForUser({
+      userId: req.user.sub,
+      role: req.user.role,
+      clanIdInput: clanId
+    });
 
     const result = await playerService.movePlayer({
       requesterId: req.user.sub,
-      clanId: Number(clanId),
+      clanId: scopedClanId,
       playerId
     });
 
@@ -51,13 +62,19 @@ async function history(req, res, next) {
 async function blacklist(req, res, next) {
   try {
     const { clanId, playerId, reason } = req.body;
-    if (!clanId || !playerId) {
-      return res.status(400).json({ message: 'clanId and playerId required' });
+    if (!playerId) {
+      return res.status(400).json({ message: 'playerId required' });
     }
+
+    const scopedClanId = await resolveClanIdForUser({
+      userId: req.user.sub,
+      role: req.user.role,
+      clanIdInput: clanId
+    });
 
     const result = await playerService.addToBlacklist({
       requesterId: req.user.sub,
-      clanId: Number(clanId),
+      clanId: scopedClanId,
       playerId: Number(playerId),
       reason
     });
@@ -70,11 +87,15 @@ async function blacklist(req, res, next) {
 
 async function blacklistList(req, res, next) {
   try {
-    const clanId = Number(req.query.clanId);
-    if (!clanId) return res.status(400).json({ message: 'clanId query required' });
+    const scopedClanId = await resolveClanIdForUser({
+      userId: req.user.sub,
+      role: req.user.role,
+      clanIdInput: req.query.clanId
+    });
+
     const result = await playerService.blacklistList({
       requesterId: req.user.sub,
-      clanId,
+      clanId: scopedClanId,
       role: req.user.role
     });
     return res.json({ blacklist: result });
@@ -86,13 +107,19 @@ async function blacklistList(req, res, next) {
 async function unblacklist(req, res, next) {
   try {
     const entryId = Number(req.params.entryId);
-    const clanId = Number(req.query.clanId);
-    if (!entryId || !clanId) {
-      return res.status(400).json({ message: 'entryId param and clanId query required' });
+    if (!entryId) {
+      return res.status(400).json({ message: 'entryId param required' });
     }
+
+    const scopedClanId = await resolveClanIdForUser({
+      userId: req.user.sub,
+      role: req.user.role,
+      clanIdInput: req.query.clanId
+    });
+
     const result = await playerService.removeFromBlacklist({
       requesterId: req.user.sub,
-      clanId,
+      clanId: scopedClanId,
       entryId,
       role: req.user.role
     });

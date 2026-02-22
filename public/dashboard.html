@@ -19,8 +19,7 @@
         <button type="button" data-target="section-site-admin" id="siteAdminMenu" class="menu-btn hidden">사이트 관리자</button>
       </nav>
       <div class="token-row">
-        <input id="token" type="text" placeholder="JWT token" />
-        <button id="saveTokenBtn" type="button">Save</button>
+        <span id="sessionBadge" class="session-badge">Session Active</span>
         <button id="logoutBtn" class="btn-danger" type="button">Logout</button>
       </div>
     </header>
@@ -30,7 +29,6 @@
         <h2>Clan Operation</h2>
         <form id="addPlayerForm" class="form-grid two">
           <strong>Add or update player</strong>
-          <input name="clanId" type="number" placeholder="Clan ID" required />
           <input name="gameUid" type="text" placeholder="Game user ID" required />
           <input name="nickname" type="text" placeholder="Nickname" required />
           <button type="submit">Save</button>
@@ -39,7 +37,6 @@
         <form id="movePlayerForm" class="form-grid two">
           <strong>Move player</strong>
           <input name="playerId" type="number" placeholder="Player PK ID" required />
-          <input name="clanId" type="number" placeholder="Target clan ID" required />
           <button type="submit">Move</button>
         </form>
 
@@ -51,7 +48,6 @@
 
         <form id="blacklistForm" class="form-grid two">
           <strong>Blacklist</strong>
-          <input name="clanId" type="number" placeholder="Clan ID" required />
           <input name="playerId" type="number" placeholder="Player PK ID" required />
           <input name="reason" type="text" placeholder="Reason" />
           <button type="submit">Add</button>
@@ -61,12 +57,10 @@
       <section id="section-invite" class="card section-panel hidden">
         <h2>부관리자 초대 (클랜장 전용)</h2>
         <form id="listAdminsForm" class="form-grid two">
-          <input name="clanId" type="number" placeholder="Clan ID" required />
           <button type="submit">List admins</button>
         </form>
 
         <form id="addAdminForm" class="form-grid two">
-          <input name="clanId" type="number" placeholder="Clan ID" required />
           <input name="email" type="email" placeholder="User email" required />
           <button type="submit">Add admin</button>
         </form>
@@ -75,11 +69,9 @@
       <section id="section-blacklist" class="card section-panel hidden">
         <h2>Blacklist List</h2>
         <form id="blacklistListForm" class="form-grid two">
-          <input name="clanId" type="number" placeholder="Clan ID" required />
           <button type="submit">Load blacklist</button>
         </form>
         <form id="unblacklistForm" class="form-grid two">
-          <input name="clanId" type="number" placeholder="Clan ID" required />
           <input name="entryId" type="number" placeholder="Blacklist Entry ID" required />
           <button type="submit">Remove from blacklist</button>
         </form>
@@ -103,7 +95,7 @@
         </form>
       </section>
 
-      <section class="card full">
+      <section class="card full hidden">
         <h2>Response Log</h2>
         <pre id="output"></pre>
       </section>
