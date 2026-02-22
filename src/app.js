@@ -18,6 +18,14 @@ app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+app.get('/login', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'login.html'));
+});
+
+app.get('/dashboard', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'dashboard.html'));
+});
+
 app.use('/api', routes);
 app.use(notFound);
 app.use(errorHandler);

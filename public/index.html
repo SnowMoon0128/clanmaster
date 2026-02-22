@@ -1,138 +1,47 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ClanMaster Control</title>
+    <title>ClanMaster</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="bg-shape bg-1"></div>
-    <div class="bg-shape bg-2"></div>
+    <header class="nav">
+      <div class="brand">ClanMaster</div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/login">Login</a>
+      </nav>
+    </header>
 
-    <section id="loginView" class="auth-wrap">
-      <div class="auth-card">
-        <h1>ClanMaster Control</h1>
-        <p class="muted">Sign in first. Dashboard opens after authentication.</p>
-
-        <form id="loginForm" class="form-grid single">
-          <input name="email" type="email" placeholder="Email (normal login)" />
-          <input name="password" type="password" placeholder="Password" required />
-          <input name="adminName" type="text" placeholder="Site admin name (JsonParc)" />
-          <input name="adminId" type="text" placeholder="Site admin id (00000000)" />
-          <button type="submit">Sign In</button>
-        </form>
-
-        <details class="signup-collapse">
-          <summary>Create account (optional)</summary>
-
-          <form id="ownerRegisterForm" class="form-grid">
-            <strong>Register Owner</strong>
-            <input name="displayName" type="text" placeholder="Display name" required />
-            <input name="email" type="email" placeholder="Email" required />
-            <input name="password" type="password" placeholder="Password" required />
-            <input name="clanName" type="text" placeholder="Clan name" required />
-            <button type="submit">Create Owner</button>
-          </form>
-
-          <form id="managerRegisterForm" class="form-grid">
-            <strong>Register Manager</strong>
-            <input name="displayName" type="text" placeholder="Display name" required />
-            <input name="email" type="email" placeholder="Email" required />
-            <input name="password" type="password" placeholder="Password" required />
-            <button type="submit">Create Manager</button>
-          </form>
-        </details>
-      </div>
-    </section>
-
-    <section id="dashboardView" class="hidden">
-      <header class="topbar">
-        <h1>ClanMaster Dashboard</h1>
-        <div class="token-row">
-          <label for="token">JWT</label>
-          <input id="token" type="text" placeholder="Stored in browser localStorage" />
-          <button id="saveTokenBtn" type="button">Save Token</button>
-          <button id="logoutBtn" type="button">Logout</button>
+    <main class="hero-wrap">
+      <section class="hero">
+        <h1>Game Clan Control Center</h1>
+        <p>Manual-first workflow for clan owners and managers. Track members, movement history, blacklist, and admin operations.</p>
+        <div class="hero-actions">
+          <a class="btn" href="/login">Login</a>
+          <a class="btn btn-ghost" href="/login#register">Create Account</a>
         </div>
-      </header>
+      </section>
 
-      <main class="layout">
-        <section class="card">
-          <h2>Clan Operation (Manual Input)</h2>
-          <form id="addPlayerForm" class="form-grid">
-            <strong>Add or update player + set current clan</strong>
-            <input name="clanId" type="number" placeholder="Clan ID" required />
-            <input name="gameUid" type="text" placeholder="Game user ID" required />
-            <input name="nickname" type="text" placeholder="Nickname" required />
-            <button type="submit">Save</button>
-          </form>
-
-          <form id="movePlayerForm" class="form-grid">
-            <strong>Move player clan</strong>
-            <input name="playerId" type="number" placeholder="Player PK ID" required />
-            <input name="clanId" type="number" placeholder="Target clan ID" required />
-            <button type="submit">Move</button>
-          </form>
-
-          <form id="historyForm" class="form-grid">
-            <strong>Player clan history</strong>
-            <input name="playerId" type="number" placeholder="Player PK ID" required />
-            <button type="submit">Fetch history</button>
-          </form>
-
-          <form id="blacklistForm" class="form-grid">
-            <strong>Blacklist player</strong>
-            <input name="clanId" type="number" placeholder="Clan ID" required />
-            <input name="playerId" type="number" placeholder="Player PK ID" required />
-            <input name="reason" type="text" placeholder="Reason (optional)" />
-            <button type="submit">Add blacklist</button>
-          </form>
-        </section>
-
-        <section class="card">
-          <h2>Clan Admin Management</h2>
-          <form id="listAdminsForm" class="form-grid">
-            <input name="clanId" type="number" placeholder="Clan ID" required />
-            <button type="submit">List admins</button>
-          </form>
-
-          <form id="addAdminForm" class="form-grid">
-            <input name="clanId" type="number" placeholder="Clan ID" required />
-            <input name="email" type="email" placeholder="User email to add" required />
-            <button type="submit">Add admin</button>
-          </form>
-        </section>
-
-        <section id="siteAdminSection" class="card hidden">
-          <h2>Site Admin Tools</h2>
-          <form id="overviewForm" class="form-grid">
-            <button type="submit">System overview</button>
-          </form>
-          <form id="blockUserForm" class="form-grid">
-            <input name="userId" type="number" placeholder="Block app_users.id" required />
-            <input name="reason" type="text" placeholder="Reason" />
-            <button type="submit">Block user</button>
-          </form>
-          <form id="unblockUserForm" class="form-grid">
-            <input name="userId" type="number" placeholder="Unblock app_users.id" required />
-            <button type="submit">Unblock user</button>
-          </form>
-        </section>
-
-        <section class="card full">
-          <h2>Response Log</h2>
-          <pre id="output"></pre>
-        </section>
-      </main>
-    </section>
-
-    <script src="./app.js"></script>
+      <section class="feature-grid">
+        <article class="feature-card">
+          <h2>Manual Input Ready</h2>
+          <p>No game API required. Managers can input player IDs and nicknames directly.</p>
+        </article>
+        <article class="feature-card">
+          <h2>History + Blacklist</h2>
+          <p>Keep clan movement history and analyze the most blacklisted players.</p>
+        </article>
+        <article class="feature-card">
+          <h2>Site Admin Control</h2>
+          <p>View full system state and block abusive users if needed.</p>
+        </article>
+      </section>
+    </main>
   </body>
 </html>

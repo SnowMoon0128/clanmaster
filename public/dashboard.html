@@ -1,0 +1,95 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - ClanMaster</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="nav nav-dashboard">
+      <div class="brand">ClanMaster Dashboard</div>
+      <div class="token-row">
+        <input id="token" type="text" placeholder="JWT token" />
+        <button id="saveTokenBtn" type="button">Save</button>
+        <button id="logoutBtn" class="btn-danger" type="button">Logout</button>
+      </div>
+    </header>
+
+    <main class="dash-layout">
+      <section class="card">
+        <h2>Clan Operation</h2>
+        <form id="addPlayerForm" class="form-grid two">
+          <strong>Add or update player</strong>
+          <input name="clanId" type="number" placeholder="Clan ID" required />
+          <input name="gameUid" type="text" placeholder="Game user ID" required />
+          <input name="nickname" type="text" placeholder="Nickname" required />
+          <button type="submit">Save</button>
+        </form>
+
+        <form id="movePlayerForm" class="form-grid two">
+          <strong>Move player</strong>
+          <input name="playerId" type="number" placeholder="Player PK ID" required />
+          <input name="clanId" type="number" placeholder="Target clan ID" required />
+          <button type="submit">Move</button>
+        </form>
+
+        <form id="historyForm" class="form-grid two">
+          <strong>Player history</strong>
+          <input name="playerId" type="number" placeholder="Player PK ID" required />
+          <button type="submit">History</button>
+        </form>
+
+        <form id="blacklistForm" class="form-grid two">
+          <strong>Blacklist</strong>
+          <input name="clanId" type="number" placeholder="Clan ID" required />
+          <input name="playerId" type="number" placeholder="Player PK ID" required />
+          <input name="reason" type="text" placeholder="Reason" />
+          <button type="submit">Add</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Clan Admin</h2>
+        <form id="listAdminsForm" class="form-grid two">
+          <input name="clanId" type="number" placeholder="Clan ID" required />
+          <button type="submit">List admins</button>
+        </form>
+
+        <form id="addAdminForm" class="form-grid two">
+          <input name="clanId" type="number" placeholder="Clan ID" required />
+          <input name="email" type="email" placeholder="User email" required />
+          <button type="submit">Add admin</button>
+        </form>
+      </section>
+
+      <section id="siteAdminSection" class="card hidden">
+        <h2>Site Admin Tools</h2>
+        <form id="overviewForm" class="form-grid two">
+          <button type="submit">System overview</button>
+        </form>
+
+        <form id="blockUserForm" class="form-grid two">
+          <input name="userId" type="number" placeholder="Block app_users.id" required />
+          <input name="reason" type="text" placeholder="Reason" />
+          <button type="submit">Block user</button>
+        </form>
+
+        <form id="unblockUserForm" class="form-grid two">
+          <input name="userId" type="number" placeholder="Unblock app_users.id" required />
+          <button type="submit">Unblock user</button>
+        </form>
+      </section>
+
+      <section class="card full">
+        <h2>Response Log</h2>
+        <pre id="output"></pre>
+      </section>
+    </main>
+
+    <script src="/dashboard.js"></script>
+  </body>
+</html>
